@@ -48,21 +48,21 @@ val domains =
     pDiffusion -> ("0.0", "0.01"),
     innovationImpact -> ("0.0", "2.0"),
     populationRate -> ("0.0", "2.0")
-    //innovationLife -> ("0.0", "4000.0"),
+    //innovationLife -> ("0.0", "4000.0")
   )
 
 val toCompute = 
   Seq(
-    /*("rMax", 0, domains),
+    ("rMax", 0, domains),
     ("distanceDecay", 1, domains),
     ("pCreation", 2, domains),
     ("pDiffusion", 3, domains),
-    ("innovationImpact", 4, domains),*/
-    ("populationRate", 5, domains)
+    ("innovationImpact", 4, domains),
+    ("populationRate", 5, domains),
     //("innovationLife", 6, domains),
-    /*("pCreation_zoomed", 2, domains.updated(2, pCreation -> ("0.0" -> "1e-5"))),
+    ("pCreation_zoomed", 2, domains.updated(2, pCreation -> ("0.0" -> "1e-5"))),
     ("pDiffusion_zoomed", 3, domains.updated(3, pDiffusion -> ("0.0" -> "1e-5"))),
-    ("innovationImpact_zoomed", 4, domains.updated(4, innovationImpact -> ("0.0" -> "2e-2")))*/
+    ("innovationImpact_zoomed", 4, domains.updated(4, innovationImpact -> ("0.0" -> "2e-2")))
   )
 
 def build(name: String, number: Int, scales: Seq[(Prototype[Double], (String, String))]) = {
@@ -135,13 +135,12 @@ def build(name: String, number: Int, scales: Seq[(Prototype[Double], (String, St
   import org.openmole.plugin.builder.evolution._
   import org.openmole.plugin.method.evolution._
 
-  val profile = GA.genomeProfile(number, 1000, GA.max)
+  val profile = GA.genomeProfile(x = number, nX = 1000, aggregation = GA.max, termination = GA.timed("PT2H"))
 
   val evolution = 
     GA (
       algorithm = profile,
       lambda = 1,
-      termination = GA.timed("PT2H"),
       cloneProbability = 0.01
     )
 
@@ -153,29 +152,29 @@ def build(name: String, number: Int, scales: Seq[(Prototype[Double], (String, St
       List(sumKsFailValue -> "0", medPop -> "0", medTime -> "0")
     )
 
-  val islandModel = islandGA(nsga2)("island", 5000, GA.counter(100000), 500)
+  val islandModel = islandGA(nsga2)("island", 1000, GA.counter(100000), 500)
 
   val mole = islandModel
 
-val saveParetoHook = 
-  AppendToCSVFileHook(
-    path + "population/pop${" + islandModel.generation.name + "}.csv",
-    islandModel.generation,
-    rMax.toArray,
-    distanceDecay.toArray,
-    pCreation.toArray,
-    pDiffusion.toArray,
-    innovationImpact.toArray,
-    populationRate.toArray,
-    //innovationLife.toArray,
-    sumKsFailValue.toArray,
-    medPop.toArray,
-    medTime.toArray)
+  val saveParetoHook = 
+    AppendToCSVFileHook(
+      path + "population/pop${" + islandModel.generation.name + "}.csv",
+      islandModel.generation,
+      rMax.toArray,
+      distanceDecay.toArray,
+      pCreation.toArray,
+      pDiffusion.toArray,
+      innovationImpact.toArray,
+      populationRate.toArray,
+      //innovationLife.toArray,
+      sumKsFailValue.toArray,
+      medPop.toArray,
+      medTime.toArray)
 
-val mapHook = SaveProfileHook(islandModel.individual, profile, scales, path + "profiles/profile${" + islandModel.generation.name + "}.csv")
-val display = DisplayHook(name + " generation ${" + islandModel.generation.name + "}")
+  val profileHook = SaveProfileHook(islandModel.individual, profile, scales, path + "profiles/profile${" + islandModel.generation.name + "}.csv")
+  val display = DisplayHook(name + " generation ${" + islandModel.generation.name + "}")
 
-mole + (islandModel.island on env) + (islandModel.outputCapsule hook mapHook) + (islandModel.outputCapsule hook display) + (islandModel.outputCapsule hook saveParetoHook)
+  mole + (islandModel.island on env) + (islandModel.output hook profileHook) + (islandModel.output hook display) + (islandModel.output hook saveParetoHook)
 }
 
 val executions = toCompute.map{ case(name, n, s) => build(name, n, s) }
