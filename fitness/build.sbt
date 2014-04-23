@@ -4,7 +4,7 @@ name := "exploration-profiles"
 
 version := "1.0.0"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 libraryDependencies += "ca.umontreal.iro" % "ssj" % "2.5" excludeAll(
   ExclusionRule(organization = "dsol"), 
