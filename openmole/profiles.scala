@@ -46,8 +46,7 @@ val domains =
     distanceDecay -> ("0.0", "4.0"),
     pCreation -> ("0.0" -> "0.01"),
     pDiffusion -> ("0.0", "0.01"),
-    innovationImpact -> ("0.0", "2.0"),
-    populationRate -> ("0.0", "2.0")
+    innovationImpact -> ("0.0", "2.0")
     //innovationLife -> ("0.0", "4000.0")
   )
 
@@ -58,8 +57,7 @@ val toCompute =
     ("pCreation", 2, domains),
     ("pDiffusion", 3, domains),
     ("innovationImpact", 4, domains),
-    ("populationRate", 5, domains),
-    //("innovationLife", 6, domains),
+    //("innovationLife", 5, domains),
     ("pCreation_zoomed", 2, domains.updated(2, pCreation -> ("0.0" -> "1e-5"))),
     ("pDiffusion_zoomed", 3, domains.updated(3, pDiffusion -> ("0.0" -> "1e-5"))),
     ("innovationImpact_zoomed", 4, domains.updated(4, innovationImpact -> ("0.0" -> "2e-2")))
@@ -72,11 +70,10 @@ def build(name: String, number: Int, scales: Seq[(Prototype[Double], (String, St
   // Define the task which runs the model
   val modelTask = 
     GroovyTask(
-      "modelTask", "modelResult = Model.run(populationRate, rMax, innovationImpact, distanceDecay, pCreation, pDiffusion, 10000, (int) innovationLife, newRNG(seed)) \n")
+      "modelTask", "modelResult = Model.run(rMax, innovationImpact, distanceDecay, pCreation, pDiffusion, 10000, (int) innovationLife, newRNG(seed)) \n")
 
   modelTask.addImport("fr.geocite.simpoplocal.exploration.*")
   
-  modelTask.addInput(populationRate)
   modelTask.addInput(rMax)
   modelTask.addInput(distanceDecay)
   modelTask.addInput(seed)
