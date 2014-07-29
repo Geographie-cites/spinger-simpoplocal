@@ -4,7 +4,7 @@ name := "exploration-profiles"
 
 version := "1.0.0"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.2"
 
 libraryDependencies += "ca.umontreal.iro" % "ssj" % "2.5" excludeAll(
   ExclusionRule(organization = "dsol"), 
@@ -19,5 +19,5 @@ OsgiKeys.exportPackage := Seq("fr.geocite.simpoplocal.*")
 
 OsgiKeys.importPackage := Seq("*;resolution:=optional")
 
-OsgiKeys.privatePackage := Seq("!scala.*", "*")
+OsgiKeys.privatePackage := Seq("*")
 
