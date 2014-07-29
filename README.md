@@ -39,7 +39,7 @@ You can find multiple other great tutorials and examples of other applications o
 
 To launch OpenMoLE in console mode and load the exploration jar : 
 
-`openmole -c -p /path/to/exploration_2.10.jar`
+`openmole -c -p /path/to/exploration_2.11.jar`
 
-Then you can use the workflow avialable in the openmole directory (it is compatible with OpenMOLE 1.0). This workflow is configured to run on the biomed VO of the grid EGI, however switching the execution environment in OpenMoLE is easy so you can use this workflow on you own multi-core machine, cluster or grid virtual organisation (you can find examples of workflows in the tutorial section on the openmole website).
+Then you can use the workflow available in the openmole directory (it is compatible with OpenMOLE 1.0). This workflow is configured to run on the biomed VO of the grid EGI, however switching the execution environment in OpenMoLE is easy so you can use this workflow on you own multi-core machine, cluster or grid virtual organisation (you can find examples of workflows in the tutorial section on the openmole website).
 
