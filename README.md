@@ -27,7 +27,7 @@ To build the OpenMOLE plugin:
 
 Get the plugin in your target directory, for instance:
 
-`target/scala-2.10/exploration-profiles_2.10-1.0.0.jar`
+`target/scala-2.11/exploration-profiles_2.11-1.0.0.jar`
 
 We use OpenMoLE to describe and launch our experimentation.
 
