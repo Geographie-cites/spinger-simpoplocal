@@ -7,15 +7,13 @@ import org.openmole.plugin.builder.stochastic._
 import org.openmole.plugin.grouping.batch._
 import org.openmole.plugin.environment.glite._
 import org.openmole.plugin.environment.desktopgrid._
+import org.openmole.plugin.hook.modifier._
 
 import fr.geocite.simpoplocal.exploration._
 
-val basePath = "/iscpif/users/reuillon/work/Slocal/published_model/profiles_poprate/"
-val env = GliteEnvironment("biomed", openMOLEMemory = 1400, wallTime = "PT4H")
-//val env = GliteEnvironment("vo.complex-systems.eu", openMOLEMemory = 1400, wallTime = "PT4H")
-//val env = DIRACGliteEnvironment("biomed", openMOLEMemory = 1400, cpuTime = "PT20H", service = "https://ccdirac06.in2p3.fr:9178")
+val basePath = "./profiles/"
+val env = GliteEnvironment("biomed", openMOLEMemory = 1400, wallTime = 4 hours)
 //val env = LocalEnvironment()
-
 
 val seed = Prototype[Long]("seed")
 
@@ -42,12 +40,12 @@ val medADDeltaTime = Prototype[Double]("medADDeltaTime")
 
 val domains = 
   Seq(
-    rMax -> ("1.0", "80000.0"),
-    distanceDecay -> ("0.0", "4.0"),
-    pCreation -> ("0.0" -> "0.01"),
-    pDiffusion -> ("0.0", "0.01"),
-    innovationImpact -> ("0.0", "2.0")
-    //innovationLife -> ("0.0", "4000.0")
+    rMax -> (1.0, 80000.0),
+    distanceDecay -> (0.0, 4.0),
+    pCreation -> (0.0 -> 0.01),
+    pDiffusion -> (0.0, 0.01),
+    innovationImpact -> (0.0, 2.0)
+    //innovationLife -> (0.0, 4000.0)
   )
 
 val toCompute = 
@@ -58,12 +56,12 @@ val toCompute =
     ("pDiffusion", 3, domains),
     ("innovationImpact", 4, domains),
     //("innovationLife", 5, domains),
-    ("pCreation_zoomed", 2, domains.updated(2, pCreation -> ("0.0" -> "1e-5"))),
-    ("pDiffusion_zoomed", 3, domains.updated(3, pDiffusion -> ("0.0" -> "1e-5"))),
-    ("innovationImpact_zoomed", 4, domains.updated(4, innovationImpact -> ("0.0" -> "2e-2")))
+    ("pCreation_zoomed", 2, domains.updated(2, pCreation -> (0.0 -> 1e-5))),
+    ("pDiffusion_zoomed", 3, domains.updated(3, pDiffusion -> (0.0 -> 1e-5))),
+    ("innovationImpact_zoomed", 4, domains.updated(4, innovationImpact -> (0.0 -> 2e-2)))
   )
 
-def build(name: String, number: Int, scales: Seq[(Prototype[Double], (String, String))]) = {
+def build(name: String, number: Int, scales: Seq[(Prototype[Double], (Double, Double))]) = {
 
   val path = basePath + s"profile_$name/"
 
@@ -129,49 +127,31 @@ def build(name: String, number: Int, scales: Seq[(Prototype[Double], (String, St
   relativizeTask addOutput medPop
   relativizeTask addOutput medTime
 
-  import org.openmole.plugin.builder.evolution._
   import org.openmole.plugin.method.evolution._
+  import ga._
 
-  val profile = GA.genomeProfile(x = number, nX = 1000, aggregation = GA.max, termination = GA.timed("PT2H"))
-
-  val evolution = 
-    GA (
-      algorithm = profile,
-      lambda = 1,
+  val profile = 
+    GenomeProfile(
+      x = number,
+      nX = 1000,
+      termination = Timed(2 hours),
+      inputs = scales,
+      objectives = Seq(sumKsFailValue, medPop, medTime),
       cloneProbability = 0.01
     )
 
-  val nsga2  = 
-    steadyGA(evolution)(
+  val evolution  = 
+    steadyGA(profile)(
       "calibrateModel", 
-      replicateModel -- relativizeTask, 
-      scales,
-      List(sumKsFailValue -> "0", medPop -> "0", medTime -> "0")
+      replicateModel -- relativizeTask
     )
 
-  val islandModel = islandGA(nsga2)("island", 1000, GA.counter(100000), 500)
+  val islandModel = islandGA(evolution)("island", 1000, Counter(100000), 500)
+  val savePopulationHook = SavePopulationHook(islandModel, s"./populations/$name") condition hookCondition
+  val saveProfile = SaveProfileHook(islandModel, s"./profiles/$name") condition hookCondition
+  val display = DisplayHook("generation ${" + islandModel.generation.name + "} for " + mame)
 
-  val mole = islandModel
-
-  val saveParetoHook = 
-    AppendToCSVFileHook(
-      path + "population/pop${" + islandModel.generation.name + "}.csv",
-      islandModel.generation,
-      rMax.toArray,
-      distanceDecay.toArray,
-      pCreation.toArray,
-      pDiffusion.toArray,
-      innovationImpact.toArray,
-      populationRate.toArray,
-      //innovationLife.toArray,
-      sumKsFailValue.toArray,
-      medPop.toArray,
-      medTime.toArray)
-
-  val profileHook = SaveProfileHook(islandModel.individual, profile, scales, path + "profiles/profile${" + islandModel.generation.name + "}.csv")
-  val display = DisplayHook(name + " generation ${" + islandModel.generation.name + "}")
-
-  mole + (islandModel.island on env) + (islandModel.output hook profileHook) + (islandModel.output hook display) + (islandModel.output hook saveParetoHook)
+  islandModel + (islandModel.island on env) + (islandModel.output hook profileHook hook display hook saveParetoHook)
 }
 
 val executions = toCompute.map{ case(name, n, s) => build(name, n, s) }
