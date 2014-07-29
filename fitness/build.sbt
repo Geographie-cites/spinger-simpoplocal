@@ -19,5 +19,5 @@ OsgiKeys.exportPackage := Seq("fr.geocite.simpoplocal.*")
 
 OsgiKeys.importPackage := Seq("*;resolution:=optional")
 
-OsgiKeys.privatePackage := Seq("*")
+OsgiKeys.privatePackage := Seq("!scala.*","*")
 
