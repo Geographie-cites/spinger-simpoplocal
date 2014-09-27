@@ -105,13 +105,13 @@ def build(name: String, number: Int, scales: Seq[(Prototype[Double], (Double, Do
 
   val eval = modelCapsule -- evalCapsule
 
-  val stat = Statistics()
-  stat.addSum(ksValue, sumKsFailValue)
-  stat.addMedian(deltaPop, medPop)
-  stat.addMedian(deltaTime, medTime)
+  val stat = StatisticsTask("stat")
+  stat add (ksValue, sumKsFailValueg, sum)
+  stat add (deltaPop, medPop, median)
+  stat add (deltaTime, medTime, median)
 
   val seedFactor = Factor(seed, UniformLongDistribution() take 100)
-  val replicateModel = statistics("replicateModel", eval, seedFactor, stat)
+  val replicateModel = replicate("replicateModel", eval, seedFactor, stat)
 
   val relativizeTask = GroovyTask(
     "relativize",
@@ -140,13 +140,7 @@ def build(name: String, number: Int, scales: Seq[(Prototype[Double], (Double, Do
       cloneProbability = 0.01
     )
 
-  val evolution  = 
-    steadyGA(profile)(
-      "calibrateModel", 
-      replicateModel -- relativizeTask
-    )
-
-  val islandModel = islandGA(evolution)("island", 1000, Counter(100000), 500)
+  val islandModel = islandSteadyGA(profile, replicateModel -- relativize)("island", 1000, Counter(100000), 500)
   val savePopulationHook = SavePopulationHook(islandModel, s"./populations/$name") condition hookCondition
   val saveProfile = SaveProfileHook(islandModel, s"./profiles/$name") condition hookCondition
   val display = DisplayHook("generation ${" + islandModel.generation.name + "} for " + mame)
