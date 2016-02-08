@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package fr.geocite.simpoplocal.exploration
+package fr.geocites.simpoplocal.exploration
 
 object DeltaTest {
   def delta(simulValue: Array[Double], theoricalValue: Double): Double = math.abs(simulValue.max - theoricalValue)

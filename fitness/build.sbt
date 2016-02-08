@@ -1,10 +1,10 @@
 organization := "fr.geocite.simpoplocal"
 
-name := "exploration-profiles"
+name := "simpoplocal"
 
 version := "1.0.0"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.7"
 
 libraryDependencies += "ca.umontreal.iro" % "ssj" % "2.5" excludeAll(
   ExclusionRule(organization = "dsol"), 
@@ -13,11 +13,14 @@ libraryDependencies += "ca.umontreal.iro" % "ssj" % "2.5" excludeAll(
 
 resolvers += "ISC-PIF" at "http://maven.iscpif.fr/public"
 
+enablePlugins(SbtOsgi)
+
 osgiSettings
 
-OsgiKeys.exportPackage := Seq("fr.geocite.simpoplocal.*")
+OsgiKeys.exportPackage := Seq("fr.geocites.simpoplocal.*")
 
 OsgiKeys.importPackage := Seq("*;resolution:=optional")
 
 OsgiKeys.privatePackage := Seq("!scala.*","*")
 
+OsgiKeys.requireCapability := ""

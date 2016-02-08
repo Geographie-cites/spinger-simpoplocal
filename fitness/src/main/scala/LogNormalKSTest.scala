@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package fr.geocite.simpoplocal.exploration
+package fr.geocites.simpoplocal.exploration
 
 import cern.colt.list.DoubleArrayList
 import java.util.Random
